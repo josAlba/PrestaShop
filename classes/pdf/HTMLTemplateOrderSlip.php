@@ -82,24 +82,30 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
      * Returns the numbering of the subscription invoice with respect to the year.
      *
      * @param int $id_order_slip order_slip
+     * @param string $year Year format YYYY
      *
      * @return int number for year
      */
-    public function getOrderSlipIdForYear(int $id_order_slip): int
+    public function getOrderSlipIdForYear(int $id_order_slip, string $year=NULL): int
     {
         $date = Db::getInstance()->getValue('SELECT date_add FROM `' . _DB_PREFIX_ . 'order_slip` WHERE id_order_slip=' . $id_order_slip);
 
         if (isset($date)) {
-            $current_year = date('Y-01-01 00:00:00', strtotime($date));
 
+            if(empty($year)){
+                $current_year = date('Y-01-01 00:00:00', strtotime($date));
+            }else{
+                $current_year = $year."-01-01 00:00:00";
+            }
+            
             $counts = Db::getInstance()->getValue(
-                'SELECT count(*) as "n" FROM `' . _DB_PREFIX_ . 'order_slip` WHERE date_add > "' . $current_year . '" AND date_add < "' . $date . '"'
+                'SELECT count(*) as "n" FROM `' . _DB_PREFIX_ . 'order_slip` WHERE date_add > "' . $current_year . '" AND date_add <= "' . $date . '"'
             );
 
-            return intval($counts) + 1;
+            return intval($counts);
         }
 
-        return 1;
+        return 0;
     }
 
     /**
